@@ -22,7 +22,7 @@ export class TrafficTraversal {
    * @param trafficGraphState 
    */
   constructor(trafficGraphState: ITrafficGraphState) {
-    this._trafficGraph   = trafficGraphState
+    this._trafficGraph  = trafficGraphState
     this._trafficPrev   = useHashmap<Edge>()
     this._trafficRoute  = useHashmap<string[]>()
     this._trafficWeight = useHashmap<number>()

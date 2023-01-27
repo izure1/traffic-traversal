@@ -1,6 +1,6 @@
 {
   "name": "traffic-traversal",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0",
   "description": "Calculate the weights between each vertex node and help you find the fastest route.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -12,6 +12,14 @@
   "files": [
     "dist/**/*.ts",
     "dist/**/*.js"
+  ],
+  "keywords": [
+    "traversal",
+    "traffic",
+    "vertex",
+    "route",
+    "SPFA",
+    "node"
   ],
   "author": "izure1 <admin@izure.org>",
   "license": "MIT",
