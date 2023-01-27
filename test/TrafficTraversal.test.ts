@@ -38,13 +38,28 @@ describe('TrafficGraph', () => {
     })
 
     graphNegative = TrafficGraph.Create()
-    graphNegative.to('a', {
-      b: -1,
-      c: -2
-    }).to('b', {
-      d: -2
-    }).to('c', {
-      d: -2
+    graphNegative.to('1', {
+      2: -.061,
+      3: -.061,
+      4: -.061,
+      5: -.061,
+      7: -.061,
+    }).to('2', {
+      1: -.166
+    }).to('3', {
+      1: -.071
+    }).to('4', {
+      2: -.035,
+      5: -.035,
+    }).to('5', {
+      1: -.045,
+      4: -.045,
+      6: -.045,
+    }).to('6', {
+      1: -.023,
+      5: -.023,
+    }).to('7', {
+      5: -.179
     })
 
     traversal = TrafficTraversal.Create(graph.state)
@@ -89,16 +104,25 @@ describe('TrafficGraph', () => {
 
   test('TrafficTraversal.reachable', () => {
     expect(traversal.reachable('a', 'C')).toBe(false)
+    expect(traversalNegative.reachable('1', '4')).toBe(true)
+    expect(traversalNegative.reachable('4', '1')).toBe(false)
+  })
+
+  test('TrafficTraversal.routes', () => {
+    expect(traversal.routes('a', 'd')).toEqual(['a', 'b', 'd'])
+    expect(traversalNegative.routes('1', '4')).toEqual(['1', '7', '5', '4'])
+    expect(() => {
+      traversalNegative.routes('4', '1')
+    }).toThrowError()
   })
 
   test('TrafficTraversal.traffic', () => {
     expect(traversal.traffic('a', 'a')).toBe(0)
     expect(traversal.traffic('a', 'd')).toBe(3)
     expect(traversal.traffic('0', '5')).toBe(20)
-    expect(traversal.routes('a', 'd')).toEqual(['a', 'b', 'd'])
 
-    expect(traversalNegative.traffic('a', 'd')).toBe(-4)
-    expect(traversalNegative.routes('a', 'd')).toEqual(['a', 'c', 'd'])
+    expect(traversalNegative.traffic('1', '4')).toBe(-0.285)
+    expect(traversalNegative.traffic('4', '1')).toBe(Infinity)
   })
 
   test('TrafficTraversal.depth', () => {

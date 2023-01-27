@@ -1,4 +1,4 @@
-import type { ITrafficGraphState, TrafficGraph, GraphVertex } from './TrafficGraph'
+import type { ITrafficGraphState, GraphVertex } from './TrafficGraph'
 
 import { useHashmap } from '@/Utils/Hashmap'
 import { hasOwnProperty } from '@/Utils/Object'
@@ -78,6 +78,10 @@ export class TrafficTraversal {
         v = prev[v]
         if (v === from) {
           routes.push(from)
+          break
+        }
+        // Infinity
+        else if (routes.includes(v)) {
           break
         }
       }
