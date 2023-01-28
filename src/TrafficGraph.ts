@@ -1,9 +1,10 @@
-import { ensure, has } from '@/Utils/Array'
+import { has } from '@/Utils/Array'
 import { deepCopy, hasOwnProperty } from '@/Utils/Object'
 
 
 export type GraphVertex = Record<string, number>
 export type TrafficGraphData = Record<string, GraphVertex>
+type InQueue = { [key: string]: true }
 
 export interface ITrafficGraphState {
   readonly data: Readonly<TrafficGraph['data']>
@@ -55,12 +56,19 @@ export class TrafficGraph {
    * Returns all the vertices listed in the current instance in an array.
    */
   get vertices(): string[] {
+    const inQueue: InQueue = {}
     const vertices: string[] = []
     for (const k in this._data) {
+      if (!hasOwnProperty(inQueue, k)) {
+        inQueue[k] = true
+        vertices.push(k)
+      }
       const gv = this._data[k]
-      ensure(vertices, k)
       for (const v in gv) {
-        ensure(vertices, v)
+        if (!hasOwnProperty(inQueue, v)) {
+          inQueue[v] = true
+          vertices.push(v)
+        }
       }
     }
     return vertices

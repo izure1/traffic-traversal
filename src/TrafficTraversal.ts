@@ -70,10 +70,12 @@ export class TrafficTraversal {
 
   private _getRoutes(from: string, to: string): string[] {
     const routes = this._trafficRoute.ensure(`route ${from} to ${to}`, () => {
+      const inQueue: InQueue = {}
       const prev = this._getTrafficPrev(from)
       const routes = [to]
       let v = prev[to]
       while (v) {
+        inQueue[v] = true
         routes.push(v)
         v = prev[v]
         if (v === from) {
@@ -81,7 +83,7 @@ export class TrafficTraversal {
           break
         }
         // Infinity
-        else if (routes.includes(v)) {
+        else if (hasOwnProperty(inQueue, v)) {
           break
         }
       }
