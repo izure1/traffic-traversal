@@ -145,4 +145,14 @@ describe('TrafficGraph', () => {
     expect(traversal.edges('a', 2).sort()).toEqual(['b', 'c', 'd'])
     expect(traversal.edges('a', 100).sort()).toEqual(['b', 'c', 'd'])
   })
+
+  test('TrafficTraversal.weight', () => {
+    expect(traversal.weight('a', 'traffic')).toBe(0)
+    expect(traversal.weight('a', 'number')).toBe(0)
+    expect(traversal.weight('a', 'mean')).toBe(0)
+
+    expect(traversalNegative.weight('1', 'traffic')).toBe(-0.305)
+    expect(traversalNegative.weight('1', 'number')).toBe(4)
+    expect(traversalNegative.weight('1', 'mean')).toBe(-0.07625)
+  })
 })

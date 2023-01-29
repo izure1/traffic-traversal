@@ -9,9 +9,10 @@ type InQueue = { [key: string]: true }
 
 export class TrafficTraversal {
   private readonly _trafficGraph: ITrafficGraphState
-  private readonly _trafficPrev: ReturnType<typeof useHashmap<Edge>>
-  private readonly _trafficRoute: ReturnType<typeof useHashmap<string[]>>
-  private readonly _trafficWeight: ReturnType<typeof useHashmap<number>>
+  private readonly _cEdge: ReturnType<typeof useHashmap<Edge>>
+  private readonly _cStrings: ReturnType<typeof useHashmap<string[]>>
+  private readonly _cNumber: ReturnType<typeof useHashmap<number>>
+  private readonly _cNumbers: ReturnType<typeof useHashmap<[number, number]>>
 
   static Create(...args: ConstructorParameters<typeof TrafficTraversal>): TrafficTraversal {
     return new TrafficTraversal(...args)
@@ -23,9 +24,10 @@ export class TrafficTraversal {
    */
   constructor(trafficGraphState: ITrafficGraphState) {
     this._trafficGraph  = trafficGraphState
-    this._trafficPrev   = useHashmap<Edge>()
-    this._trafficRoute  = useHashmap<string[]>()
-    this._trafficWeight = useHashmap<number>()
+    this._cEdge         = useHashmap<Edge>()
+    this._cStrings      = useHashmap<string[]>()
+    this._cNumber       = useHashmap<number>()
+    this._cNumbers      = useHashmap<[number, number]>()
   }
 
   private _graphVertex(vertex: string): GraphVertex {
@@ -33,7 +35,7 @@ export class TrafficTraversal {
   }
 
   private _getTrafficPrev(from: string) {
-    return this._trafficPrev.ensure(`traffic map from '${from}'`, () => {
+    return this._cEdge.ensure(`traffic map from '${from}'`, () => {
       const queue: string[] = []
       const inQueue: InQueue = {}
       const distance: GraphVertex = {}
@@ -69,7 +71,7 @@ export class TrafficTraversal {
   }
 
   private _getRoutes(from: string, to: string): string[] {
-    const routes = this._trafficRoute.ensure(`route ${from} to ${to}`, () => {
+    const routes = this._cStrings.ensure(`route ${from} to ${to}`, () => {
       const inQueue: InQueue = {}
       const prev = this._getTrafficPrev(from)
       const routes = [to]
@@ -132,7 +134,7 @@ export class TrafficTraversal {
    * @param depth Set how deep to search from the vertex. If you specify this value as a negative number, the search is unrestricted. Default is `-1`.
    */
   edges(vertex: string, depth = -1): string[] {
-    return this._trafficRoute.ensure(`edges from '${vertex}' with '${depth}' depth`, () => {
+    return this._cStrings.ensure(`edges from '${vertex}' with '${depth}' depth`, () => {
       const queue: string[] = []
       this._addEdges(vertex, depth, 0, queue, {})
       return queue
@@ -154,7 +156,7 @@ export class TrafficTraversal {
    * @param to This is the target vertex.
    */
   traffic(from: string, to: string): number {
-    return this._trafficWeight.ensure(`traffic from '${from}' to '${to}'`, () => {
+    return this._cNumber.ensure(`traffic from '${from}' to '${to}'`, () => {
       const routes = this._getRoutes(from, to)
       if (!this._reach(routes, from, to)) {
         return Infinity
@@ -176,6 +178,32 @@ export class TrafficTraversal {
     })
   }
 
+  weight(vertex: string, mode: 'traffic'|'number'|'mean'): number {
+    const tuple = this._cNumbers.ensure(`weight tuple from '${vertex}'`, () => {
+      let weight = 0
+      let num = 0
+      for (const k in this._trafficGraph.data) {
+        if (!hasOwnProperty(this._trafficGraph.data[k], vertex)) {
+          continue
+        }
+        weight += this._trafficGraph.data[k][vertex]
+        num++
+      }
+      return [weight, num]
+    })
+    switch (mode) {
+      case 'traffic': return tuple[0]
+      case 'number':  return tuple[1]
+      case 'mean': {
+        const mean = tuple[0] / tuple[1]
+        return Number.isNaN(mean) ? 0 : mean
+      }
+      default: {
+        throw new Error(`The '${mode}' mode is unsupported.`)
+      }
+    }
+  }
+
   /**
    * Returns the shortest distance from the starting vertex to the target vertex. This is similar to the `distance` method, but takes direction into account. If unreachable, returns `Infinity`.
    * @param from This is the starting vertex.
@@ -183,7 +211,7 @@ export class TrafficTraversal {
    * @returns 
    */
   depth(from: string, to: string): number {
-    return this._trafficWeight.ensure(`depth from '${from}' to '${to}'`, () => {
+    return this._cNumber.ensure(`depth from '${from}' to '${to}'`, () => {
       const routes = this._getRoutes(from, to)
       if (!this._reach(routes, from, to)) {
         return Infinity
