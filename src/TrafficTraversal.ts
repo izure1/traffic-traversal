@@ -30,7 +30,7 @@ export class TrafficTraversal {
     this._cNumbers      = useHashmap<[number, number]>()
   }
 
-  private _graphVertex(vertex: string): GraphVertex {
+  protected _graphVertex(vertex: string): GraphVertex {
     return hasOwnProperty(this._trafficGraph.data, vertex) ? this._trafficGraph.data[vertex] : {}
   }
 
@@ -70,7 +70,7 @@ export class TrafficTraversal {
     })
   }
 
-  private _getRoutes(from: string, to: string): string[] {
+  protected _getRoutes(from: string, to: string): string[] {
     const routes = this._cStrings.ensure(`route ${from} to ${to}`, () => {
       const inQueue: InQueue = {}
       const prev = this._getTrafficPrev(from)
@@ -95,7 +95,7 @@ export class TrafficTraversal {
     return copy(routes)
   }
 
-  private _reach(routes: string[], from: string, to: string): boolean {
+  protected _reach(routes: string[], from: string, to: string): boolean {
     return first(routes) === from && last(routes) === to
   }
 
