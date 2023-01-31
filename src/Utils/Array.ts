@@ -30,11 +30,11 @@ export function has<T>(array: T[], ...items: T[]): boolean {
 }
 
 export function first<T>(array: T[]): T|undefined {
-  return array[0]
+  return array.at(0)
 }
 
 export function last<T>(array: T[]): T|undefined {
-  return array[array.length-1]
+  return array.at(-1)
 }
 
 export function copy<T>(array: T[]): T[] {

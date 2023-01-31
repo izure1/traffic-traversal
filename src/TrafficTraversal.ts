@@ -9,10 +9,12 @@ type InQueue = { [key: string]: true }
 
 export class TrafficTraversal {
   private readonly _trafficGraph: ITrafficGraphState
-  private readonly _cEdge: ReturnType<typeof useHashmap<Edge>>
-  private readonly _cStrings: ReturnType<typeof useHashmap<string[]>>
-  private readonly _cNumber: ReturnType<typeof useHashmap<number>>
-  private readonly _cNumbers: ReturnType<typeof useHashmap<[number, number]>>
+  private readonly _cEdge:        ReturnType<typeof useHashmap<Edge>>
+  private readonly _cStrings:     ReturnType<typeof useHashmap<string[]>>
+  private readonly _cNumber:      ReturnType<typeof useHashmap<number>>
+  private readonly _cNumbers:     ReturnType<typeof useHashmap<[number, number]>>
+  private readonly _cVertex:      ReturnType<typeof useHashmap<GraphVertex>>
+  private readonly _cBoolean:     ReturnType<typeof useHashmap<boolean>>
 
   static Create(...args: ConstructorParameters<typeof TrafficTraversal>): TrafficTraversal {
     return new TrafficTraversal(...args)
@@ -28,10 +30,23 @@ export class TrafficTraversal {
     this._cStrings      = useHashmap<string[]>()
     this._cNumber       = useHashmap<number>()
     this._cNumbers      = useHashmap<[number, number]>()
+    this._cVertex       = useHashmap<GraphVertex>()
+    this._cBoolean      = useHashmap<boolean>()
   }
 
   protected _graphVertex(vertex: string): GraphVertex {
-    return hasOwnProperty(this._trafficGraph.data, vertex) ? this._trafficGraph.data[vertex] : {}
+    return this._cVertex.ensure(`vertices from '${vertex}'`, () => {
+      if (hasOwnProperty(this._trafficGraph.data, vertex)) {
+        return this._trafficGraph.data[vertex]
+      }
+      return {}
+    })
+  }
+
+  protected _isEdgeHaveGraphVertex(vertex: string, edge: string): boolean {
+    return this._cBoolean.ensure(`vertex '${vertex}' has '${edge}' edge`, () => {
+      return hasOwnProperty(this._graphVertex(vertex), edge)
+    })
   }
 
   private _getTrafficPrev(from: string) {
@@ -56,8 +71,9 @@ export class TrafficTraversal {
           const d_u = distance[u]
           const d_v = distance[v]
           const w_uv = vertices[v]
-          if (d_u + w_uv < d_v) {
-            distance[v] = d_u + w_uv
+          const cur = d_u + w_uv
+          if (cur < d_v) {
+            distance[v] = cur
             edge[v] = u
             if (!inQueue[v]) {
               inQueue[v] = true
@@ -85,14 +101,14 @@ export class TrafficTraversal {
           break
         }
         // Infinity
-        else if (hasOwnProperty(inQueue, v)) {
+        else if (inQueue[v]) {
           break
         }
       }
       routes.reverse()
       return routes
     })
-    return copy(routes)
+    return routes
   }
 
   protected _reach(routes: string[], from: string, to: string): boolean {
@@ -109,7 +125,7 @@ export class TrafficTraversal {
     if (!this._reach(routes, from, to)) {
       throw new Error(`It is a structure that cannot be reached from vertex '${from}' to '${to}'.`)
     }
-    return routes
+    return copy(routes)
   }
 
   private _addEdges(vertex: string, depth: number, curDepth: number, queue: string[], inQueue: InQueue): void {
@@ -168,7 +184,7 @@ export class TrafficTraversal {
         i++
         const next = routes[i]
         const gv = this._graphVertex(vertex)
-        if (!(next in gv)) {
+        if (!this._isEdgeHaveGraphVertex(vertex, next)) {
           break
         }
         traffic += gv[next]
@@ -183,7 +199,7 @@ export class TrafficTraversal {
       let weight = 0
       let num = 0
       for (const k in this._trafficGraph.data) {
-        if (!hasOwnProperty(this._trafficGraph.data[k], vertex)) {
+        if (!this._isEdgeHaveGraphVertex(k, vertex)) {
           continue
         }
         weight += this._trafficGraph.data[k][vertex]
