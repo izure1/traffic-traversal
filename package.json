@@ -1,6 +1,6 @@
 {
   "name": "traffic-traversal",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Calculate the weights between each vertex node and help you find the fastest route.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
