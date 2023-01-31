@@ -18,7 +18,9 @@
     "traffic",
     "vertex",
     "route",
+    "SPF",
     "SPFA",
+    "dijkstra",
     "node"
   ],
   "author": "izure1 <admin@izure.org>",

@@ -114,7 +114,7 @@ Returns whether the target vertex can be reached from the starting vertex.
 
 #### `traffic`(from: `string`, to: `string`): `number`
 
-Returns the sum of the least weighted routes from the starting vertex to the target vertex.
+Returns the sum of the least weighted routes from the starting vertex to the target vertex. If unreachable, returns `Infinity`.
 
 #### `depth`(from: `string`, to: `string`): `number`
 
@@ -122,7 +122,7 @@ Returns the shortest distance from the starting vertex to the target vertex. Thi
 
 #### `distance`(a: `string`, b: `string`): `number`
 
-Returns the shortest distance between two vertices. This is similar to the `depth` method, but does not take direction into account.
+Returns the shortest distance between two vertices. This is similar to the `depth` method, but does not take direction into account. If unreachable, returns `Infinity`.
 
 ## Install
 
