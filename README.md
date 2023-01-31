@@ -94,6 +94,11 @@ It returns whether the instance has a vertex.
 
 It returns whether all the vertices exist in that instance. Returns `false` if any of the vertices are missing.
 
+#### `invert`(): `this`
+
+Invert all weights in an instance. For example, when A to B has a `2` weight, it will be `-2`.
+It's useful for switching the shortest to longest routes or minimum to maximum traffic in a graph.
+
 ### `TrafficTraversal`
 
 #### `constructor`(trafficGraphState: `ITrafficGraphState`)
