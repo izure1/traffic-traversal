@@ -102,6 +102,16 @@ describe('TrafficGraph', () => {
     expect(traversal.traffic('a', 'd')).toBe(4)
   })
 
+  test('TrafficGraph.invert', () => {
+    graphNegative.invert()
+    traversalNegative = TrafficTraversal.Create(graphNegative.state)
+    expect(traversalNegative.routes('1', '4')).toEqual(['1', '4'])
+
+    graphNegative.invert()
+    traversalNegative = TrafficTraversal.Create(graphNegative.state)
+    expect(traversalNegative.routes('1', '4')).toEqual(['1', '7', '5', '4'])
+  })
+
   test('TrafficTraversal.reachable', () => {
     expect(traversal.reachable('a', 'C')).toBe(false)
     expect(traversalNegative.reachable('1', '4')).toBe(true)

@@ -185,4 +185,21 @@ export class TrafficGraph {
   hasAll(...vertices: string[]): boolean {
     return has(this.vertices, ...vertices)
   }
+
+  /**
+   * Invert all weights in an instance. For example, when A to B has a `2` weight, it will be `-2`.
+   * It's useful for switching the shortest to longest routes or minimum to maximum traffic in a graph.
+   * @example
+   * const inverted = TrafficTraversal.Create(traffic.invert().state)
+   * const longest = invertedTraversal.routes('A', 'B')
+   */
+  invert(): this {
+    for (const k in this._data) {
+      const gv = this._data[k]
+      for (const v in gv) {
+        gv[v] *= -1
+      }
+    }
+    return this
+  }
 }
