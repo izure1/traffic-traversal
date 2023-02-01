@@ -1,5 +1,5 @@
 import { has } from '@/Utils/Array'
-import { deepCopy, hasOwnProperty } from '@/Utils/Object'
+import { deepCopy, setObjectMap } from '@/Utils/Object'
 
 
 export type GraphVertex = Record<string, number>
@@ -22,7 +22,7 @@ export class TrafficGraph {
    * Create a new graph instance. You can generate from existing data using `data` parameters.
    * @param data You can restore it with existing data.This data can be obtained by `TrafficGraph.data`.
    */
-  constructor(data: TrafficGraphData = {}) {
+  constructor(data: TrafficGraphData = setObjectMap({})) {
     this._data = data
   }
 
@@ -34,7 +34,12 @@ export class TrafficGraph {
    * Returns to an array in the form that can serialize the graph information of the current instance.
    */
   get data(): TrafficGraphData {
-    return deepCopy(this._data)
+    const clone = deepCopy(this._data)
+    for (const k in clone) {
+      const gv = clone[k]
+      setObjectMap(gv)
+    }
+    return setObjectMap(clone)
   }
 
   /**
@@ -44,11 +49,11 @@ export class TrafficGraph {
     const data = Object.freeze(this.data)
     const vertices = Object.freeze(this.vertices)
     const timestamp = Date.now()
-    const state: Readonly<ITrafficGraphState> = Object.freeze({
+    const state = Object.freeze({
       data,
       vertices,
       timestamp
-    })
+    } as ITrafficGraphState)
     return state
   }
 
@@ -56,16 +61,16 @@ export class TrafficGraph {
    * Returns all the vertices listed in the current instance in an array.
    */
   get vertices(): string[] {
-    const inQueue: InQueue = {}
+    const inQueue: InQueue = setObjectMap({})
     const vertices: string[] = []
     for (const k in this._data) {
-      if (!hasOwnProperty(inQueue, k)) {
+      if (!(k in inQueue)) {
         inQueue[k] = true
         vertices.push(k)
       }
       const gv = this._data[k]
       for (const v in gv) {
-        if (!hasOwnProperty(inQueue, v)) {
+        if (!(v in inQueue)) {
           inQueue[v] = true
           vertices.push(v)
         }
@@ -82,7 +87,7 @@ export class TrafficGraph {
   }
 
   private _graphVertex(vertex: string): GraphVertex {
-    return hasOwnProperty(this._data, vertex) ? this._data[vertex] : {}
+    return vertex in this._data ? this._data[vertex] : setObjectMap({})
   }
 
   /**
@@ -92,8 +97,8 @@ export class TrafficGraph {
    * @param dest This is a list of weights of each vertex.
    */
   to(source: string, dest: GraphVertex): this {
-    if (!hasOwnProperty(this._data, source)) {
-      this._data[source] = {}
+    if (!(source in this._data)) {
+      this._data[source] = setObjectMap({})
     }
     const gv = this._graphVertex(source)
     for (const v in dest) {
@@ -115,7 +120,7 @@ export class TrafficGraph {
   both(a: string, b: GraphVertex): this {
     this.to(a, b)
     for (const v in b) {
-      const gv: GraphVertex = {}
+      const gv: GraphVertex = setObjectMap({})
       const w = b[v]
       gv[a] = w
       this.to(v, gv)

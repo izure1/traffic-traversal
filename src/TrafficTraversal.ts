@@ -1,7 +1,7 @@
 import type { ITrafficGraphState, GraphVertex } from './TrafficGraph'
 
 import { useHashmap } from '@/Utils/Hashmap'
-import { hasOwnProperty } from '@/Utils/Object'
+import { setObjectMap } from '@/Utils/Object'
 import { first, last, copy } from '@/Utils/Array'
 
 type Edge = { [key: string]: string }
@@ -14,7 +14,6 @@ export class TrafficTraversal {
   private readonly _cNumber:      ReturnType<typeof useHashmap<number>>
   private readonly _cNumbers:     ReturnType<typeof useHashmap<[number, number]>>
   private readonly _cVertex:      ReturnType<typeof useHashmap<GraphVertex>>
-  private readonly _cBoolean:     ReturnType<typeof useHashmap<boolean>>
 
   static Create(...args: ConstructorParameters<typeof TrafficTraversal>): TrafficTraversal {
     return new TrafficTraversal(...args)
@@ -31,30 +30,20 @@ export class TrafficTraversal {
     this._cNumber       = useHashmap<number>()
     this._cNumbers      = useHashmap<[number, number]>()
     this._cVertex       = useHashmap<GraphVertex>()
-    this._cBoolean      = useHashmap<boolean>()
   }
 
   protected _graphVertex(vertex: string): GraphVertex {
     return this._cVertex.ensure(`vertices from '${vertex}'`, () => {
-      if (hasOwnProperty(this._trafficGraph.data, vertex)) {
-        return this._trafficGraph.data[vertex]
-      }
-      return {}
-    })
-  }
-
-  protected _isEdgeHaveGraphVertex(vertex: string, edge: string): boolean {
-    return this._cBoolean.ensure(`vertex '${vertex}' has '${edge}' edge`, () => {
-      return hasOwnProperty(this._graphVertex(vertex), edge)
+      return this._trafficGraph.data[vertex] ?? setObjectMap({})
     })
   }
 
   private _getTrafficPrev(from: string) {
     return this._cEdge.ensure(`traffic map from '${from}'`, () => {
       const queue: string[] = []
-      const inQueue: InQueue = {}
-      const distance: GraphVertex = {}
-      const edge: Edge = {}
+      const inQueue: InQueue = setObjectMap({})
+      const distance: GraphVertex = setObjectMap({})
+      const edge: Edge = setObjectMap({})
 
       for (const v of this._trafficGraph.vertices) {
         distance[v] = Infinity
@@ -88,7 +77,7 @@ export class TrafficTraversal {
 
   protected _getRoutes(from: string, to: string): string[] {
     const routes = this._cStrings.ensure(`route ${from} to ${to}`, () => {
-      const inQueue: InQueue = {}
+      const inQueue: InQueue = setObjectMap({})
       const prev = this._getTrafficPrev(from)
       const routes = [to]
       let v = prev[to]
@@ -152,7 +141,7 @@ export class TrafficTraversal {
   edges(vertex: string, depth = -1): string[] {
     return this._cStrings.ensure(`edges from '${vertex}' with '${depth}' depth`, () => {
       const queue: string[] = []
-      this._addEdges(vertex, depth, 0, queue, {})
+      this._addEdges(vertex, depth, 0, queue, setObjectMap({}))
       return queue
     })
   }
@@ -184,7 +173,7 @@ export class TrafficTraversal {
         i++
         const next = routes[i]
         const gv = this._graphVertex(vertex)
-        if (!this._isEdgeHaveGraphVertex(vertex, next)) {
+        if (!(next in gv)) {
           break
         }
         traffic += gv[next]
@@ -199,10 +188,11 @@ export class TrafficTraversal {
       let weight = 0
       let num = 0
       for (const k in this._trafficGraph.data) {
-        if (!this._isEdgeHaveGraphVertex(k, vertex)) {
+        const gv = this._trafficGraph.data[k]
+        if (!(vertex in gv)) {
           continue
         }
-        weight += this._trafficGraph.data[k][vertex]
+        weight += gv[vertex]
         num++
       }
       return [weight, num]
