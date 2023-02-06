@@ -62,17 +62,23 @@ Currently copied instance and returns to a new instance.
 
 Create a single direction weight route. It is possible to traverse the `source` to `dest`, but vice versa is impossible. If you had the same vertex before, the value is overwritten.
 
+You can specify relative values. If you fill in the prior character `+=`, `-=`, `*=`, `/=`, The target value is calculated based on the current value of the property.
+
 #### `both`(a: `string`, b: `GraphVertex`): `this`
 
 Set the weight route that leads to both directions between the two vertices. 'a' vertex and 'b' vertex can traverse to each other.
 
 For example, `graph.both('a', { b: 1 })` is same as `graph.to('a', { b: 1 }).to('b', { a: 1 })`
 
+You can specify relative values. If you fill in the prior character `+=`, `-=`, `*=`, `/=`, The target value is calculated based on the current value of the property.
+
 #### `all`(dest: `GraphVertex`): `this`
 
 Set the weight between all vertices passed by parameters.
 
 For example, `graph.all({ a: 1, b: 2, c: 3 })` is same as `graph.to('a', { b: 2, c: 3 }).to('b', { a: 1, c: 3 }).to('c', { a: 1, b: 2 })`
+
+You can specify relative values. If you fill in the prior character `+=`, `-=`, `*=`, `/=`, The target value is calculated based on the current value of the property.
 
 #### `unlinkTo`(source: `string`, dest: `string`): `this`
 

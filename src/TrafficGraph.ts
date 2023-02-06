@@ -1,7 +1,7 @@
 import { has } from '@/Utils/Array'
 import { deepCopy, setObjectMap } from '@/Utils/Object'
 
-
+export type GraphVertexCalc = Record<string, string>
 export type GraphVertex = Record<string, number>
 export type TrafficGraphData = Record<string, GraphVertex>
 type InQueue = { [key: string]: true }
@@ -90,13 +90,39 @@ export class TrafficGraph {
     return vertex in this._data ? this._data[vertex] : setObjectMap({})
   }
 
+  private _calculate(vertices: GraphVertex, vertex: string, calc: string): number {
+    const before  = vertex in vertices ? vertices[vertex] : 0
+    const symbol  = calc.substring(0, 2)
+    const value   = Number(calc.substring(2))
+    switch (symbol) {
+      case '+=': {
+        return before + value
+      }
+      case '-=': {
+        return before - value
+      }
+      case '*=': {
+        return before * value
+      }
+      case '/=': {
+        return before / value
+      }
+      default: {
+        throw new Error(`The string formula that can be used is as follows: +=, -=, *=, /=`)
+      }
+    }
+  }
+
   /**
    * Create a single direction weight route. It is possible to traverse the `source` to `dest`, but vice versa is impossible.
    * If you had the same vertex before, the value is overwritten.
    * @param source The starting vertex.
-   * @param dest This is a list of weights of each vertex.
+   * @param dest This is a list of weights of each vertex. You can specify relative values. If you fill in the prior character `+=`, `-=`, `*=`, `/=`, The target value is calculated based on the current value of the property.
+   * @example
+   * graph.to('a', { b: 1 })
+   * graph.to('a', { b: '+=1' })
    */
-  to(source: string, dest: GraphVertex): this {
+  to(source: string, dest: GraphVertex|GraphVertexCalc): this {
     if (!(source in this._data)) {
       this._data[source] = setObjectMap({})
     }
@@ -105,7 +131,10 @@ export class TrafficGraph {
       if (source === v) {
         continue
       }
-      const w = dest[v]
+      let w = dest[v]
+      if (typeof w === 'string') {
+        w = this._calculate(gv, v, w)
+      }
       gv[v] = w
     }
     return this
@@ -115,12 +144,15 @@ export class TrafficGraph {
    * Set the weight route that leads to both directions between the two vertices. 'a' vertex and 'b' vertex can traverse to each other.
    * For example, `graph.both('a', { b: 1 })` is same as `graph.to('a', { b: 1 }).to('b', { a: 1 })`
    * @param a The vertex a.
-   * @param b This is a list of weights of each vertex.
+   * @param b This is a list of weights of each vertex. You can specify relative values. If you fill in the prior character `+=`, `-=`, `*=`, `/=`, The target value is calculated based on the current value of the property.
+   * @example
+   * graph.both('a', { b: 1 })
+   * graph.both('a', { b: '+=1' })
    */
-  both(a: string, b: GraphVertex): this {
+  both(a: string, b: GraphVertex|GraphVertexCalc): this {
     this.to(a, b)
     for (const v in b) {
-      const gv: GraphVertex = setObjectMap({})
+      const gv: GraphVertex|GraphVertexCalc = setObjectMap({})
       const w = b[v]
       gv[a] = w
       this.to(v, gv)
@@ -131,9 +163,12 @@ export class TrafficGraph {
   /**
    * Set the weight between all vertices passed by parameters.
    * For example, `graph.all({ a: 1, b: 2, c: 3 })` is same as `graph.to('a', { b: 2, c: 3 }).to('b', { a: 1, c: 3 }).to('c', { a: 1, b: 2 })`
-   * @param dest This is a list of weights of each vertex.
+   * @param dest This is a list of weights of each vertex. You can specify relative values. If you fill in the prior character `+=`, `-=`, `*=`, `/=`, The target value is calculated based on the current value of the property.
+   * @example
+   * graph.all({ a: 1, b: 2, c: 3 })
+   * graph.all({ a: '+=1', b: '+=1', c: '+=1' })
    */
-  all(dest: GraphVertex): this {
+  all(dest: GraphVertex|GraphVertexCalc): this {
     for (const v in dest) {
       this.to(v, dest)
     }

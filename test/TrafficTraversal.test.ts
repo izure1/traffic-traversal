@@ -66,6 +66,46 @@ describe('TrafficGraph', () => {
     traversalNegative = TrafficTraversal.Create(graphNegative.state)
   })
 
+  test('TrafficGraph::calc', () => {
+    const graph = TrafficGraph.Create()
+    graph.to('a', {
+      b: 1
+    }).to('a', {
+      b: '+=1'
+    }).to('a', {
+      b: '+=2',
+      c: '-=1'
+    })
+    let traversal = TrafficTraversal.Create(graph.state)
+    expect(traversal.traffic('a', 'b')).toBe(4)
+    expect(traversal.traffic('a', 'c')).toBe(-1)
+    expect(traversal.traffic('b', 'a')).toBe(Infinity)
+
+    graph.both('a', {
+      a: '+=1',
+      b: '+=2',
+      c: '+=3'
+    })
+    traversal = TrafficTraversal.Create(graph.state)
+    expect(traversal.traffic('a', 'b')).toBe(6)
+    expect(traversal.traffic('a', 'c')).toBe(2)
+    expect(traversal.traffic('b', 'a')).toBe(2)
+    expect(traversal.traffic('c', 'a')).toBe(3)
+
+    graph.all({
+      a: '*=1',
+      b: '*=2',
+      c: '*=3',
+    })
+    traversal = TrafficTraversal.Create(graph.state)
+    expect(traversal.traffic('a', 'b')).toBe(6)
+    expect(traversal.traffic('a', 'c')).toBe(6)
+    expect(traversal.traffic('b', 'a')).toBe(2)
+    expect(traversal.traffic('b', 'c')).toBe(0)
+    expect(traversal.traffic('c', 'a')).toBe(2)
+    expect(traversal.traffic('c', 'b')).toBe(0)
+  })
+
   test('TrafficGraph.data', () => {
     expect(graph.data.a).toEqual({ b: 1, c: 2 })
   })
