@@ -1,9 +1,13 @@
-import { has } from '@/Utils/Array'
-import { deepCopy, setObjectMap } from '@/Utils/Object'
+import { has } from './Utils/Array'
+import { copy, ensure } from './Utils/Array'
+import { deepCopy, setObjectMap } from './Utils/Object'
 
 export type GraphVertexCalc = Record<string, string>
 export type GraphVertex = Record<string, number>
-export type TrafficGraphData = Record<string, GraphVertex>
+export type TrafficGraphData = {
+  vertex: Record<string, GraphVertex>
+  embedded: string[]
+}
 type InQueue = { [key: string]: true }
 
 export interface ITrafficGraphState {
@@ -22,7 +26,10 @@ export class TrafficGraph {
    * Create a new graph instance. You can generate from existing data using `data` parameters.
    * @param data You can restore it with existing data.This data can be obtained by `TrafficGraph.data`.
    */
-  constructor(data: TrafficGraphData = setObjectMap({})) {
+  constructor(data: TrafficGraphData = setObjectMap({
+    vertex: {},
+    embedded: []
+  })) {
     this._data = data
   }
 
@@ -35,8 +42,8 @@ export class TrafficGraph {
    */
   get data(): TrafficGraphData {
     const clone = deepCopy(this._data)
-    for (const k in clone) {
-      const gv = clone[k]
+    for (const k in clone.vertex) {
+      const gv = clone.vertex[k]
       setObjectMap(gv)
     }
     return setObjectMap(clone)
@@ -63,12 +70,12 @@ export class TrafficGraph {
   get vertices(): string[] {
     const inQueue: InQueue = setObjectMap({})
     const vertices: string[] = []
-    for (const k in this._data) {
+    for (const k in this._data.vertex) {
       if (!(k in inQueue)) {
         inQueue[k] = true
         vertices.push(k)
       }
-      const gv = this._data[k]
+      const gv = this._data.vertex[k]
       for (const v in gv) {
         if (!(v in inQueue)) {
           inQueue[v] = true
@@ -87,7 +94,11 @@ export class TrafficGraph {
   }
 
   private _graphVertex(vertex: string): GraphVertex {
-    return vertex in this._data ? this._data[vertex] : setObjectMap({})
+    return vertex in this._data.vertex ? this._data.vertex[vertex] : setObjectMap({})
+  }
+
+  private _embed(vertex: string): void {
+    ensure(this._data.embedded, vertex)
   }
 
   private _calculate(vertices: GraphVertex, vertex: string, calc: string): number {
@@ -123,8 +134,9 @@ export class TrafficGraph {
    * graph.to('a', { b: '+=1' })
    */
   to(source: string, dest: GraphVertex|GraphVertexCalc): this {
-    if (!(source in this._data)) {
-      this._data[source] = setObjectMap({})
+    if (!(source in this._data.vertex)) {
+      this._data.vertex[source] = setObjectMap({})
+      this._embed(source)
     }
     const gv = this._graphVertex(source)
     for (const v in dest) {
@@ -136,6 +148,7 @@ export class TrafficGraph {
         w = this._calculate(gv, v, w)
       }
       gv[v] = w
+      this._embed(v)
     }
     return this
   }
@@ -202,11 +215,11 @@ export class TrafficGraph {
    * @param vertex The vertex what you want to delete.
    */
   drop(vertex: string): this {
-    for (const v in this._data) {
-      const gv = this._data[v]
+    for (const v in this._data.vertex) {
+      const gv = this._data.vertex[v]
       delete gv[vertex]
     }
-    delete this._data[vertex]
+    delete this._data.vertex[vertex]
     return this
   }
 
@@ -234,8 +247,8 @@ export class TrafficGraph {
    * const longest = invertedTraversal.routes('A', 'B')
    */
   invert(): this {
-    for (const k in this._data) {
-      const gv = this._data[k]
+    for (const k in this._data.vertex) {
+      const gv = this._data.vertex[k]
       for (const v in gv) {
         gv[v] *= -1
       }

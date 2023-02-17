@@ -2,19 +2,27 @@ const path = require('path')
 const esbuild = require('esbuild')
 
 const common = {
-  entryPoints: [path.resolve(__dirname, '../src/index.ts')],
-  target: 'esnext',
-  bundle: true,
+  target: 'esnext'
 }
 
 esbuild.buildSync({
   ...common,
-  outfile: path.resolve(__dirname, '../dist', 'cjs', 'index.js'),
-  format: 'cjs'
+  entryPoints: [
+    { in: 'src/index.ts', out: 'index' },
+    { in: 'src/Helpers/VertexEncoder.ts', out: 'Helpers/VertexEncoder' }
+  ],
+  outdir: 'dist/cjs',
+  format: 'cjs',
+  bundle: true,
 })
 
 esbuild.buildSync({
   ...common,
-  outfile: path.resolve(__dirname, '../dist', 'esm', 'index.js'),
-  format: 'esm'
+  entryPoints: [
+    { in: 'src/index.ts', out: 'index' },
+    { in: 'src/Helpers/VertexEncoder.ts', out: 'Helpers/VertexEncoder' },
+  ],
+  outdir: 'dist/esm',
+  format: 'esm',
+  bundle: true,
 })

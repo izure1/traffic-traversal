@@ -1,8 +1,8 @@
 import type { ITrafficGraphState, GraphVertex } from './TrafficGraph'
 
-import { useHashmap } from '@/Utils/Hashmap'
-import { setObjectMap } from '@/Utils/Object'
-import { first, last, copy } from '@/Utils/Array'
+import { useHashmap } from './Utils/Hashmap'
+import { setObjectMap } from './Utils/Object'
+import { first, last, copy } from './Utils/Array'
 
 type Edge = { [key: string]: string }
 type InQueue = { [key: string]: true }
@@ -34,7 +34,7 @@ export class TrafficTraversal {
 
   protected _graphVertex(vertex: string): GraphVertex {
     return this._cVertex.ensure(`vertices from '${vertex}'`, () => {
-      return this._trafficGraph.data[vertex] ?? setObjectMap({})
+      return this._trafficGraph.data.vertex[vertex] ?? setObjectMap({})
     })
   }
 
@@ -187,8 +187,8 @@ export class TrafficTraversal {
     const tuple = this._cNumbers.ensure(`weight tuple from '${vertex}'`, () => {
       let weight = 0
       let num = 0
-      for (const k in this._trafficGraph.data) {
-        const gv = this._trafficGraph.data[k]
+      for (const k in this._trafficGraph.data.vertex) {
+        const gv = this._trafficGraph.data.vertex[k]
         if (!(vertex in gv)) {
           continue
         }

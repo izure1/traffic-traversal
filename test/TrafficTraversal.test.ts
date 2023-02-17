@@ -1,7 +1,9 @@
 import { TrafficGraph } from '../src/TrafficGraph'
 import { TrafficTraversal } from '../src/TrafficTraversal'
 
-describe('TrafficGraph', () => {
+import { VertexEncoder } from '../src/Helpers/VertexEncoder'
+
+describe('Core', () => {
   let graph: TrafficGraph
   let graphNegative: TrafficGraph
   let traversal: TrafficTraversal
@@ -107,7 +109,7 @@ describe('TrafficGraph', () => {
   })
 
   test('TrafficGraph.data', () => {
-    expect(graph.data.a).toEqual({ b: 1, c: 2 })
+    expect(graph.data.vertex.a).toEqual({ b: 1, c: 2 })
   })
 
   test('TrafficGraph.vertices', () => {
@@ -204,5 +206,82 @@ describe('TrafficGraph', () => {
     expect(traversalNegative.weight('1', 'traffic')).toBe(-0.305)
     expect(traversalNegative.weight('1', 'number')).toBe(4)
     expect(traversalNegative.weight('1', 'mean')).toBe(-0.07625)
+  })
+})
+
+describe('Helpers', () => {
+  let graph: TrafficGraph
+  let encoder: VertexEncoder
+
+  beforeEach(() => {
+    graph = TrafficGraph.Create()
+    
+    graph.to('the', {
+      fat: 1,
+      cat: 2
+    }).to('fat', {
+      the: 1,
+      cat: 1,
+      sat: 2
+    }).to('cat', {
+      the: 2,
+      fat: 1,
+      sat: 1,
+      on: 2
+    }).to('sat', {
+      fat: 2,
+      cat: 1,
+      on: 1,
+      the: 2
+    }).to('on', {
+      fat: 2,
+      cat: 1,
+      the: 1,
+      mat: 2
+    }).to('the', {
+      sat: '+=2',
+      on: '+=1',
+      mat: '+=1'
+    }).to('mat', {
+      on: 2,
+      the: 1
+    })
+
+    encoder = VertexEncoder.Create(graph.state)
+  })
+
+  test('VertexEncoder.zeroHot', () => {
+    expect(encoder.zeroHot()).toEqual([0, 0, 0, 0, 0, 0])
+  })
+
+  test('VertexEncoder.oneHot', () => {
+    expect(encoder.oneHot()).toEqual({
+      the:  [1, 0, 0, 0, 0, 0],
+      fat:  [0, 1, 0, 0, 0, 0],
+      cat:  [0, 0, 1, 0, 0, 0],
+      sat:  [0, 0, 0, 1, 0, 0],
+      on:   [0, 0, 0, 0, 1, 0],
+      mat:  [0, 0, 0, 0, 0, 1],
+    })
+  })
+
+  test('VertexEncoder.label', () => {
+    expect(encoder.label()).toEqual({
+      the:  0,
+      fat:  1,
+      cat:  2,
+      sat:  3,
+      on:   4,
+      mat:  5,
+    })
+
+    expect(encoder.label(1)).toEqual({
+      the:  1,
+      fat:  2,
+      cat:  3,
+      sat:  4,
+      on:   5,
+      mat:  6,
+    })
   })
 })
