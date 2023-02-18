@@ -1,11 +1,15 @@
 const path = require('path')
 const esbuild = require('esbuild')
+const { dtsPlugin } = require('esbuild-plugin-d.ts')
 
 const common = {
-  target: 'esnext'
+  target: 'esnext',
+  plugins: [
+    dtsPlugin()
+  ]
 }
 
-esbuild.buildSync({
+esbuild.build({
   ...common,
   entryPoints: [
     { in: 'src/index.ts', out: 'index' },
@@ -16,7 +20,7 @@ esbuild.buildSync({
   bundle: true,
 })
 
-esbuild.buildSync({
+esbuild.build({
   ...common,
   entryPoints: [
     { in: 'src/index.ts', out: 'index' },
