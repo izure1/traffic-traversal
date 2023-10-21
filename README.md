@@ -1,6 +1,7 @@
 # traffic-traversal
 
 [![](https://data.jsdelivr.com/v1/package/npm/traffic-traversal/badge)](https://www.jsdelivr.com/package/npm/traffic-traversal)
+![Github node.js workflow](https://github.com/izure1/traffic-traversal/actions/workflows/node.js.yml/badge.svg)
 
 Calculate the weights between each vertex node and help you find the fastest route.
 
