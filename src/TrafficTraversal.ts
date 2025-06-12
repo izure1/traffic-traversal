@@ -57,9 +57,9 @@ export class TrafficTraversal {
         const u = queue.shift()!
         const vertices = this._graphVertex(u)
         for (const v in vertices) {
-          const d_u = distance[u]
-          const d_v = distance[v]
-          const w_uv = vertices[v]
+          const d_u = distance[u] ?? 0
+          const d_v = distance[v] ?? 0
+          const w_uv = vertices[v] ?? 0
           const cur = d_u + w_uv
           if (cur < d_v) {
             distance[v] = cur
