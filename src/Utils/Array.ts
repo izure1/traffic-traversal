@@ -38,5 +38,5 @@ export function last<T>(array: T[]): T|undefined {
 }
 
 export function copy<T>(array: T[]): T[] {
-  return [...array]
+  return ([] as T[]).concat(array)
 }

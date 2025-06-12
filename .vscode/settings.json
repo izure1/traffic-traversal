@@ -1,3 +1,4 @@
 {
-  "commentTranslate.targetLanguage": "ko"
+  "commentTranslate.targetLanguage": "ko",
+  "deno.enable": false
 }
