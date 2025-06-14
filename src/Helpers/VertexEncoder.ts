@@ -2,7 +2,7 @@ import type { ITrafficGraphState } from '../TrafficGraph'
 
 import { copy } from '../Utils/Array'
 import { useHashmap } from '../Utils/Hashmap'
-import { setObjectMap, deepCopy } from '../Utils/Object'
+import { deepCopy } from '../Utils/Object'
 
 
 export class VertexEncoder {
@@ -42,7 +42,7 @@ export class VertexEncoder {
    */
   oneHot(): Record<string, number[]> {
     const raw = this._cRecordNumbers.ensure('oneHot', () => {
-      const encoding: Record<string, number[]> = setObjectMap({})
+      const encoding: Record<string, number[]> = {}
       const vertices = this._trafficGraph.vertices
       const len = vertices.length
   
@@ -59,7 +59,7 @@ export class VertexEncoder {
     })
 
     const clone = deepCopy(raw)
-    return setObjectMap(clone)
+    return clone
   }
   
   /**
@@ -68,7 +68,7 @@ export class VertexEncoder {
    */
   label(startFrom = 0): Record<string, number> {
     const raw = this._cRecordNumber.ensure(`label start from '${startFrom}'`, () => {
-      const encoding: Record<string, number> = setObjectMap({})
+      const encoding: Record<string, number> = {}
       const vertices = this._trafficGraph.vertices
       
       for (const v of vertices) {
@@ -83,6 +83,6 @@ export class VertexEncoder {
     })
 
     const clone = deepCopy(raw)
-    return setObjectMap(clone)
+    return clone
   }
 }

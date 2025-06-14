@@ -1,6 +1,6 @@
 {
   "name": "@izure/traffic-traversal",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Calculate the weights between each vertex node and help you find the fastest route.",
   "author": "izure <admin@izure.org>",
   "license": "MIT",

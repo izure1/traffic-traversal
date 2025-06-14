@@ -196,6 +196,8 @@ describe('Core', () => {
     expect(traversal.edges('a', 1).sort()).toEqual(['b', 'c'])
     expect(traversal.edges('a', 2).sort()).toEqual(['b', 'c', 'd'])
     expect(traversal.edges('a', 100).sort()).toEqual(['b', 'c', 'd'])
+    expect(traversal.edges('a')).toEqual(['b', 'c', 'd'])
+    expect(traversal.edges('a', 1)).toEqual(['b', 'c'])
   })
 
   test('TrafficTraversal.weight', () => {

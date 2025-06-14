@@ -1,9 +1,9 @@
 import type { ITrafficGraphState, GraphVertex } from './TrafficGraph'
 
 import { useHashmap } from './Utils/Hashmap'
-import { setObjectMap } from './Utils/Object'
 import { first, last, copy } from './Utils/Array'
 
+type EdgeDepth = { [key: string]: number }
 type Edge = { [key: string]: string }
 type InQueue = { [key: string]: true }
 
@@ -34,16 +34,16 @@ export class TrafficTraversal {
 
   protected _graphVertex(vertex: string): GraphVertex {
     return this._cVertex.ensure(`vertices from '${vertex}'`, () => {
-      return this._trafficGraph.data.vertex[vertex] ?? setObjectMap({})
+      return this._trafficGraph.data.vertex[vertex] ?? {}
     })
   }
 
   private _getTrafficPrev(from: string) {
     return this._cEdge.ensure(`traffic map from '${from}'`, () => {
       const queue: string[] = []
-      const inQueue: InQueue = setObjectMap({})
-      const distance: GraphVertex = setObjectMap({})
-      const edge: Edge = setObjectMap({})
+      const inQueue: InQueue = {}
+      const distance: GraphVertex = {}
+      const edge: Edge = {}
 
       for (const v of this._trafficGraph.vertices) {
         distance[v] = Infinity
@@ -57,9 +57,9 @@ export class TrafficTraversal {
         const u = queue.shift()!
         const vertices = this._graphVertex(u)
         for (const v in vertices) {
-          const d_u = distance[u] ?? 0
-          const d_v = distance[v] ?? 0
-          const w_uv = vertices[v] ?? 0
+          const d_u = distance[u]
+          const d_v = distance[v]
+          const w_uv = vertices[v]
           const cur = d_u + w_uv
           if (cur < d_v) {
             distance[v] = cur
@@ -77,7 +77,7 @@ export class TrafficTraversal {
 
   protected _getRoutes(from: string, to: string): string[] {
     const routes = this._cStrings.ensure(`route ${from} to ${to}`, () => {
-      const inQueue: InQueue = setObjectMap({})
+      const inQueue: InQueue = {}
       const prev = this._getTrafficPrev(from)
       const routes = [to]
       let v = prev[to]
@@ -117,32 +117,36 @@ export class TrafficTraversal {
     return copy(routes)
   }
 
-  private _addEdges(vertex: string, depth: number, curDepth: number, queue: string[], inQueue: InQueue): void {
+  private _addEdges(vertex: string, depth: number, curDepth: number, depthQueue: EdgeDepth, inQueue: InQueue): void {
     const gv = this._graphVertex(vertex)
     const done = curDepth === depth
     if (done) {
       return
     }
     for (const v in gv) {
+      depthQueue[v] = curDepth
       if (inQueue[v]) {
         continue
       }
-      queue.push(v)
       inQueue[v] = true
-      this._addEdges(v, depth, curDepth+1, queue, inQueue)
+      this._addEdges(v, depth, curDepth+1, depthQueue, inQueue)
     }
   }
 
   /**
    * Returns a list of vertices adjacent to that vertex as an array. You can set a depth limit using the `depth` parameter.
+   * This means that the vertex at the back of the array is deeper.
    * @param vertex The vertex from which to start the search.
    * @param depth Set how deep to search from the vertex. If you specify this value as a negative number, the search is unrestricted. Default is `-1`.
    */
   edges(vertex: string, depth = -1): string[] {
     return this._cStrings.ensure(`edges from '${vertex}' with '${depth}' depth`, () => {
-      const queue: string[] = []
-      this._addEdges(vertex, depth, 0, queue, setObjectMap({}))
-      return queue
+      const depths: EdgeDepth = {}
+      this._addEdges(vertex, depth, 0, depths, {})
+      const stack: string[] = Object.entries(depths)
+        .sort((a, b) => a[1] - b[1])
+        .flatMap((t) => t[0])
+      return stack
     })
   }
 

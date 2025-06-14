@@ -1,6 +1,6 @@
 import { has } from './Utils/Array'
-import { copy, ensure } from './Utils/Array'
-import { deepCopy, setObjectMap } from './Utils/Object'
+import { ensure } from './Utils/Array'
+import { deepCopy } from './Utils/Object'
 
 export type GraphVertexCalc = Record<string, string>
 export type GraphVertex = Record<string, number>
@@ -26,10 +26,10 @@ export class TrafficGraph {
    * Create a new graph instance. You can generate from existing data using `data` parameters.
    * @param data You can restore it with existing data.This data can be obtained by `TrafficGraph.data`.
    */
-  constructor(data: TrafficGraphData = setObjectMap({
+  constructor(data: TrafficGraphData = {
     vertex: {},
     embedded: []
-  })) {
+  }) {
     this._data = data
   }
 
@@ -41,12 +41,7 @@ export class TrafficGraph {
    * Returns to an array in the form that can serialize the graph information of the current instance.
    */
   get data(): TrafficGraphData {
-    const clone = deepCopy(this._data)
-    for (const k in clone.vertex) {
-      const gv = clone.vertex[k]
-      setObjectMap(gv)
-    }
-    return setObjectMap(clone)
+    return deepCopy(this._data)
   }
 
   /**
@@ -68,7 +63,7 @@ export class TrafficGraph {
    * Returns all the vertices listed in the current instance in an array.
    */
   get vertices(): string[] {
-    const inQueue: InQueue = setObjectMap({})
+    const inQueue: InQueue = {}
     const vertices: string[] = []
     for (const k in this._data.vertex) {
       if (!(k in inQueue)) {
@@ -94,7 +89,7 @@ export class TrafficGraph {
   }
 
   private _graphVertex(vertex: string): GraphVertex {
-    return vertex in this._data.vertex ? this._data.vertex[vertex] : setObjectMap({})
+    return vertex in this._data.vertex ? this._data.vertex[vertex] : {}
   }
 
   private _embed(vertex: string): void {
@@ -135,7 +130,7 @@ export class TrafficGraph {
    */
   to(source: string, dest: GraphVertex|GraphVertexCalc): this {
     if (!(source in this._data.vertex)) {
-      this._data.vertex[source] = setObjectMap({})
+      this._data.vertex[source] = {}
       this._embed(source)
     }
     const gv = this._graphVertex(source)
@@ -165,7 +160,7 @@ export class TrafficGraph {
   both(a: string, b: GraphVertex|GraphVertexCalc): this {
     this.to(a, b)
     for (const v in b) {
-      const gv: GraphVertex|GraphVertexCalc = setObjectMap({})
+      const gv: GraphVertex|GraphVertexCalc = {}
       const w = b[v]
       gv[a] = w
       this.to(v, gv)
